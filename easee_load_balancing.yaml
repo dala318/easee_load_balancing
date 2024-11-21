@@ -85,6 +85,7 @@ action:
       current_p1: "{{ valPhase1Limit }}"
       current_p2: "{{ valPhase1Limit }}"
       current_p3: "{{ valPhase1Limit }}"
+      time_to_live: 10
 variables:
   entChargerStatus: !input ichargerstatus
   valPhase1Limit: >-
