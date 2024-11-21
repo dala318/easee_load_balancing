@@ -74,7 +74,7 @@ triggers:
   - !input 'iphase1'
   - !input 'iphase2'
   - !input 'iphase3
-condition:
+conditions:
 - condition: state
   entity_id: !input ichargestatus
   state: charging
