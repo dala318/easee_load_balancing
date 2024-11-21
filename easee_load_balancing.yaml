@@ -13,7 +13,7 @@ blueprint:
           multiple: false
     iphase1:
       name: Mains phase 1 current sensor
-      description: 'Make sure it's the phase that Easee uses as phase 1'
+      description: 'Make sure it is the phase that Easee uses as phase 1'
       selector:
         entity:
           domain: sensor
@@ -21,7 +21,7 @@ blueprint:
           multiple: false
     iphase2:
       name: Mains phase 2 current sensor
-      description: 'Make sure it's the phase that Easee uses as phase 2'
+      description: 'Make sure it is the phase that Easee uses as phase 2'
       selector:
         entity:
           domain: sensor
@@ -29,7 +29,7 @@ blueprint:
           multiple: false
     iphase3:
       name: Mains phase 3 current sensor
-      description: 'Make sure it's the phase that Easee uses as phase 3'
+      description: 'Make sure it is the phase that Easee uses as phase 3'
       selector:
         entity:
           domain: sensor
