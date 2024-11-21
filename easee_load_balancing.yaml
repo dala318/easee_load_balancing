@@ -1,0 +1,107 @@
+blueprint:
+  domain: automation
+  name: Easee Load Balancing
+  description: This automation adapts the Easee circut limits based on house consumption.
+  source_url: https://github.com/dala318/easee_load_balancing/blob/main/easee_load_balancing.yaml
+  input:
+    ichargerstatus:
+      name: Charger status
+      description: 'The Easee status (the one ending with _status).'
+      selector:
+        entity:
+          domain: sensor
+          multiple: false
+    iphase1:
+      name: Mains phase 1 current sensor
+      description: 'Make sure it's the phase that Easee uses as phase 1'
+      selector:
+        entity:
+          domain: sensor
+          device_class: current
+          multiple: false
+    iphase2:
+      name: Mains phase 2 current sensor
+      description: 'Make sure it's the phase that Easee uses as phase 2'
+      selector:
+        entity:
+          domain: sensor
+          device_class: current
+          multiple: false
+    iphase3:
+      name: Mains phase 3 current sensor
+      description: 'Make sure it's the phase that Easee uses as phase 3'
+      selector:
+        entity:
+          domain: sensor
+          device_class: current
+          multiple: false
+    idecreasebelow:
+      name: 'Reduce allowed current on phase if total consumption on phase is above'
+      description: 'Should be set to main fuse capacity or slightly below.'
+      selector:
+        number:
+          min: 0.0
+          max: 40.0
+          step: 1.0
+          unit_of_measurement: 'ampere'
+          mode: slider
+      default: 20
+    iallowincrease:
+      name: 'Allow increasing limit if total consumption on phase is below'
+      description: 'Should be set slightly below the max allowed consumption.'
+      selector:
+        number:
+          min: 0.0
+          max: 40.0
+          step: 1.0
+          unit_of_measurement: 'ampere'
+          mode: slider
+      default: 14
+    imaxallowed:
+      name: 'Maximum allowed current per phase on charger'
+      description: 'Regardless of total consumption the allowed current per phase will not increase beyond this value'
+      selector:
+        number:
+          min: 6.0
+          max: 40.0
+          step: 1.0
+          unit_of_measurement: 'ampere'
+          mode: slider
+      default: 16
+trigger:
+# - platform: numeric_state
+- platform: state
+  entity_id:
+  - !input 'iphase1'
+  - !input 'iphase2'
+  - !input 'iphase3
+  # above: !input
+condition:
+- condition: state
+  entity_id: !input ichargestatus
+  state: charging
+action:
+- service: easee.set_circuit_dynamic_limit
+  data:
+    charger_id: '{{ state_attr(entChargerStatus,''id'') }}
+
+      '
+    current_p1: '{{ valCurrentAvailableForCharging }}
+    current_p2: '{{ valCurrentAvailableForCharging }}
+    current_p3: '{{ valCurrentAvailableForCharging }}
+
+      '
+variables:
+  entChargerDynamicLimit: !input 'ichargerdynamiclimit'
+  entConsumptionPower: !input 'iconsumptionpower'
+  entChargerStatus: !input 'ichargerstatus'
+  valCurrentAvailableForCharging: '{% set powerAvailable = (states(entSolarPower)|float
+    - states(entConsumptionPower)|float + (states(entChargingPower)|float * 1000))|int
+    %} {% if states(entBatterySOC)|float >= entBatteryMinSoC|float %} {% set powerAvailable
+    = powerAvailable + entBatteryBoostPower|float %} {% endif %} {% set EaseeAvailableCurrent
+    = (powerAvailable / valExternalVoltage) | float %} {% if EaseeAvailableCurrent
+    < 6 %}  {% set EaseeAvailableCurrent = 6 %} {% elif EaseeAvailableCurrent > 32
+    %}  {% set EaseeAvailableCurrent = 32 %}  {% endif %} {{ EaseeAvailableCurrent|int
+    }}'
+mode: restart
+max_exceeded: silent
