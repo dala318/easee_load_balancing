@@ -82,20 +82,21 @@ action:
   - service: easee.set_circuit_dynamic_limit
     data:
       charger_id: "{{ state_attr(entChargerStatus,'id') }}"
-      current_p1: "{{ valCurrentAvailableForCharging }}"
-      current_p2: "{{ valCurrentAvailableForCharging }}"
-      current_p3: "{{ valCurrentAvailableForCharging }}"
+      current_p1: "{{ valPhase1Limit }}"
+      current_p2: "{{ valPhase1Limit }}"
+      current_p3: "{{ valPhase1Limit }}"
 variables:
-  entChargerDynamicLimit: !input ichargerdynamiclimit
-  entConsumptionPower: !input iconsumptionpower
   entChargerStatus: !input ichargerstatus
-  valCurrentAvailableForCharging: '{% set powerAvailable = (states(entSolarPower)|float
-    - states(entConsumptionPower)|float + (states(entChargingPower)|float * 1000))|int
-    %} {% if states(entBatterySOC)|float >= entBatteryMinSoC|float %} {% set powerAvailable
-    = powerAvailable + entBatteryBoostPower|float %} {% endif %} {% set EaseeAvailableCurrent
-    = (powerAvailable / valExternalVoltage) | float %} {% if EaseeAvailableCurrent
-    < 6 %}  {% set EaseeAvailableCurrent = 6 %} {% elif EaseeAvailableCurrent > 32
-    %}  {% set EaseeAvailableCurrent = 32 %}  {% endif %} {{ EaseeAvailableCurrent|int
-    }}'
+  valPhase1Limit: >-
+    {% set C1 = states("sensor.slimmelezer_current_phase_1") | int() %}
+    {% set L1 = state_attr("sensor.ehpsw796_dynamic_circuit_limit", "state_dynamicCircuitCurrentP1") | int() %}
+    {% if C1 >= !input reduce_above %}
+      {% set change = True %}
+      {{ L1 - 1 }}
+    {% elif C1 < !input idecreasebelow and L1 < !input imaxallowed %}
+      {% set change = True %}
+      {{ L1 + 1 }}
+    {%- endif %}
+    {{ L1 }}
 mode: single
 max_exceeded: silent
