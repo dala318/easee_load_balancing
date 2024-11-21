@@ -68,14 +68,12 @@ blueprint:
           unit_of_measurement: 'ampere'
           mode: slider
       default: 16
-trigger:
-# - platform: numeric_state
-- platform: state
+triggers:
+- trigger: state
   entity_id:
   - !input 'iphase1'
   - !input 'iphase2'
   - !input 'iphase3
-  # above: !input
 condition:
 - condition: state
   entity_id: !input ichargestatus
