@@ -69,26 +69,24 @@ blueprint:
           mode: slider
       default: 16
 triggers:
-- trigger: state
-  entity_id:
-  - !input 'iphase1'
-  - !input 'iphase2'
-  - !input 'iphase3
+  - trigger: state
+    entity_id:
+      - !input 'iphase1'
+      - !input 'iphase2'
+      - !input 'iphase3
 conditions:
-- condition: state
-  entity_id: !input ichargerstatus
-  state: charging
+  - condition: state
+    entity_id: !input ichargerstatus
+    state: charging
 action:
-- service: easee.set_circuit_dynamic_limit
-  data:
-    charger_id: '{{ state_attr(entChargerStatus,''id'') }}
-
-      '
-    current_p1: '{{ valCurrentAvailableForCharging }}
-    current_p2: '{{ valCurrentAvailableForCharging }}
-    current_p3: '{{ valCurrentAvailableForCharging }}
-
-      '
+  - service: easee.set_circuit_dynamic_limit
+    data:
+      charger_id: '{{ state_attr(entChargerStatus,''id'') }}'
+  
+      current_p1: '{{ valCurrentAvailableForCharging }}'
+      current_p2: '{{ valCurrentAvailableForCharging }}'
+      current_p3: '{{ valCurrentAvailableForCharging }}'
+  
 variables:
   entChargerDynamicLimit: !input 'ichargerdynamiclimit'
   entConsumptionPower: !input 'iconsumptionpower'
@@ -101,5 +99,5 @@ variables:
     < 6 %}  {% set EaseeAvailableCurrent = 6 %} {% elif EaseeAvailableCurrent > 32
     %}  {% set EaseeAvailableCurrent = 32 %}  {% endif %} {{ EaseeAvailableCurrent|int
     }}'
-mode: restart
+mode: single
 max_exceeded: silent
