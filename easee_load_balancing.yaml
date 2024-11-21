@@ -43,7 +43,7 @@ blueprint:
           min: 0.0
           max: 40.0
           step: 1.0
-          unit_of_measurement: 'ampere'
+          unit_of_measurement: ampere
           mode: slider
       default: 20
     iallowincrease:
@@ -54,7 +54,7 @@ blueprint:
           min: 0.0
           max: 40.0
           step: 1.0
-          unit_of_measurement: 'ampere'
+          unit_of_measurement: ampere
           mode: slider
       default: 14
     imaxallowed:
@@ -65,32 +65,30 @@ blueprint:
           min: 6.0
           max: 40.0
           step: 1.0
-          unit_of_measurement: 'ampere'
+          unit_of_measurement: ampere
           mode: slider
       default: 16
 triggers:
   - trigger: state
     entity_id:
-      - !input 'iphase1'
-      - !input 'iphase2'
-      - !input 'iphase3'
+      - !input iphase1
+      - !input iphase2
+      - !input iphase3
 conditions:
   - condition: state
-    entity_id: !input 'ichargerstatus'
+    entity_id: !input ichargerstatus
     state: charging
 action:
   - service: easee.set_circuit_dynamic_limit
     data:
-      charger_id: '{{ state_attr(entChargerStatus,''id'') }}'
-  
-      current_p1: '{{ valCurrentAvailableForCharging }}'
-      current_p2: '{{ valCurrentAvailableForCharging }}'
-      current_p3: '{{ valCurrentAvailableForCharging }}'
-  
+      charger_id: "{{ state_attr(entChargerStatus,'id') }}"
+      current_p1: "{{ valCurrentAvailableForCharging }}"
+      current_p2: "{{ valCurrentAvailableForCharging }}"
+      current_p3: "{{ valCurrentAvailableForCharging }}"
 variables:
-  entChargerDynamicLimit: !input 'ichargerdynamiclimit'
-  entConsumptionPower: !input 'iconsumptionpower'
-  entChargerStatus: !input 'ichargerstatus'
+  entChargerDynamicLimit: !input ichargerdynamiclimit
+  entConsumptionPower: !input iconsumptionpower
+  entChargerStatus: !input ichargerstatus
   valCurrentAvailableForCharging: '{% set powerAvailable = (states(entSolarPower)|float
     - states(entConsumptionPower)|float + (states(entChargingPower)|float * 1000))|int
     %} {% if states(entBatterySOC)|float >= entBatteryMinSoC|float %} {% set powerAvailable
