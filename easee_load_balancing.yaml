@@ -96,7 +96,7 @@ variables:
     {% elif C1 < !input idecreasebelow and L1 < !input imaxallowed %}
       {% set change = True %}
       {{ L1 + 1 }}
-    {%- endif %}
+    {% endif %}
     {{ L1 }}
 mode: single
 max_exceeded: silent
