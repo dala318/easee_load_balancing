@@ -76,7 +76,7 @@ triggers:
   - !input 'iphase3
 conditions:
 - condition: state
-  entity_id: !input ichargestatus
+  entity_id: !input ichargerstatus
   state: charging
 action:
 - service: easee.set_circuit_dynamic_limit
