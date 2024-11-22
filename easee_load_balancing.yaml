@@ -11,6 +11,13 @@ blueprint:
         entity:
           domain: sensor
           multiple: false
+    ichargercircuitlimit:
+      name: Charger dynamic circuit limit
+      description: 'The Easee limit (the one ending with _dynamic_circuit_limit), it may have to be manualy enabled.'
+      selector:
+        entity:
+          domain: sensor
+          multiple: false
     iphase1:
       name: Mains phase 1 current sensor
       description: 'Make sure it is the phase that Easee uses as phase 1'
@@ -35,7 +42,7 @@ blueprint:
           domain: sensor
           device_class: current
           multiple: false
-    idecreasebelow:
+    idecreaseabove:
       name: 'Reduce allowed current on phase if total consumption on phase is above'
       description: 'Should be set to main fuse capacity or slightly below.'
       selector:
@@ -88,10 +95,14 @@ action:
       time_to_live: 10
 variables:
   entChargerStatus: !input ichargerstatus
+  entChargerLimit: !input ichargercircuitlimit
+  entPhase1: !input iphase1
+  entPhase2: !input iphase2
+  entPhase3: !input iphase3
   valPhase1Limit: >-
-    {% set C1 = states("sensor.slimmelezer_current_phase_1") | int() %}
-    {% set L1 = state_attr("sensor.ehpsw796_dynamic_circuit_limit", "state_dynamicCircuitCurrentP1") | int() %}
-    {% if C1 >= !input reduce_above %}
+    {% set C1 = states(entPhase1) | int() %}
+    {% set L1 = state_attr(entChargerLimit, "state_dynamicCircuitCurrentP1") | int() %}
+    {% if C1 >= !input idecreaseabove %}
       {% set change = True %}
       {{ L1 - 1 }}
     {% elif C1 < !input idecreasebelow and L1 < !input imaxallowed %}
