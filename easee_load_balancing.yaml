@@ -89,9 +89,36 @@ action:
   - service: easee.set_circuit_dynamic_limit
     data:
       charger_id: "{{ state_attr(entChargerStatus,'id') }}"
-      current_p1: "{{ valPhase1Limit }}"
-      current_p2: "{{ valPhase1Limit }}"
-      current_p3: "{{ valPhase1Limit }}"
+      current_p1: >-
+        {% set C1 = states(entPhase1) | int() %}
+        {% set L1 = state_attr(entChargerLimit, "state_dynamicCircuitCurrentP1") %}
+        {% if C1 >= valDecreaseAbove %}
+          {{ L1 - 1 }}
+        {% elif C1 < valAllowIncrease and L1 < valMaxAllowed %}
+          {{ L1 + 1 }}
+        {% else %}
+          {{ L1 }}
+        {% endif %}
+      current_p2: >-
+        {% set C2 = states(entPhase1) | int() %}
+        {% set L2 = state_attr(entChargerLimit, "state_dynamicCircuitCurrentP2") %}
+        {% if C2 >= valDecreaseAbove %}
+          {{ L2 - 1 }}
+        {% elif C2 < valAllowIncrease and L2 < valMaxAllowed %}
+          {{ L2 + 1 }}
+        {% else %}
+          {{ L2 }}
+        {% endif %}
+      current_p3: >-
+        {% set C3 = states(entPhase1) | int() %}
+        {% set L3 = state_attr(entChargerLimit, "state_dynamicCircuitCurrentP3") %}
+        {% if C3 >= valDecreaseAbove %}
+          {{ L3 - 1 }}
+        {% elif C1 < valAllowIncrease and L1 < valMaxAllowed %}
+          {{ L3 + 1 }}
+        {% else %}
+          {{ L3 }}
+        {% endif %}
       time_to_live: 10
 variables:
   entChargerStatus: !input ichargerstatus
@@ -99,16 +126,8 @@ variables:
   entPhase1: !input iphase1
   entPhase2: !input iphase2
   entPhase3: !input iphase3
-  valPhase1Limit: >-
-    {% set C1 = states(entPhase1) | int() %}
-    {% set L1 = state_attr(entChargerLimit, "state_dynamicCircuitCurrentP1") | int() %}
-    {% if C1 >= !input idecreaseabove %}
-      {% set change = True %}
-      {{ L1 - 1 }}
-    {% elif C1 < !input iallowincrease and L1 < !input imaxallowed %}
-      {% set change = True %}
-      {{ L1 + 1 }}
-    {% endif %}
-    {{ L1 }}
+  valDecreaseAbove: !input idecreaseabove
+  valAllowIncrease: !input iallowincrease
+  valMaxAllowed: !input imaxallowed
 mode: single
 max_exceeded: silent
