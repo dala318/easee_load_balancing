@@ -105,7 +105,7 @@ variables:
     {% if C1 >= !input idecreaseabove %}
       {% set change = True %}
       {{ L1 - 1 }}
-    {% elif C1 < !input idecreasebelow and L1 < !input imaxallowed %}
+    {% elif C1 < !input iallowincrease and L1 < !input imaxallowed %}
       {% set change = True %}
       {{ L1 + 1 }}
     {% endif %}
