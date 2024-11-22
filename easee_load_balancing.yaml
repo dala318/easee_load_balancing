@@ -85,6 +85,44 @@ conditions:
   - condition: state
     entity_id: !input ichargerstatus
     state: charging
+  - condition: or
+    conditions:
+      - condition: numeric_state
+        entity_id: !input iphase1
+        above: !input idecreaseabove
+      - condition: and
+        conditions:
+          - condition: numeric_state
+            entity_id: !input iphase1
+            below: !input iallowincrease
+          - condition: numeric_state
+            entity_id: !input ichargercircuitlimit
+            attribute: state_dynamicCircuitCurrentP1
+            below: !input iallowincrease
+      - condition: numeric_state
+        entity_id: !input iphase2
+        above: !input idecreaseabove
+      - condition: and
+        conditions:
+          - condition: numeric_state
+            entity_id: !input iphase2
+            below: !input iallowincrease
+          - condition: numeric_state
+            entity_id: !input ichargercircuitlimit
+            attribute: state_dynamicCircuitCurrentP2
+            below: !input iallowincrease
+      - condition: numeric_state
+        entity_id: !input iphase3
+        above: !input idecreaseabove
+      - condition: and
+        conditions:
+          - condition: numeric_state
+            entity_id: !input iphase3
+            below: !input iallowincrease
+          - condition: numeric_state
+            entity_id: !input ichargercircuitlimit
+            attribute: state_dynamicCircuitCurrentP3
+            below: !input iallowincrease
 action:
   - service: easee.set_circuit_dynamic_limit
     data:
@@ -114,7 +152,7 @@ action:
         {% set L3 = state_attr(entChargerLimit, "state_dynamicCircuitCurrentP3") %}
         {% if C3 >= valDecreaseAbove %}
           {{ L3 - 1 }}
-        {% elif C1 < valAllowIncrease and L1 < valMaxAllowed %}
+        {% elif C3 < valAllowIncrease and L3 < valMaxAllowed %}
           {{ L3 + 1 }}
         {% else %}
           {{ L3 }}
