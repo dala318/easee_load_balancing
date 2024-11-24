@@ -53,17 +53,6 @@ blueprint:
           unit_of_measurement: ampere
           mode: slider
       default: 20
-    iallowincrease:
-      name: 'Allow increasing limit if total consumption on phase is below'
-      description: 'Should be set slightly below the max allowed consumption.'
-      selector:
-        number:
-          min: 0.0
-          max: 40.0
-          step: 1.0
-          unit_of_measurement: ampere
-          mode: slider
-      default: 14
     imaxallowed:
       name: 'Maximum allowed current per phase on charger'
       description: 'Regardless of total consumption the allowed current per phase will not increase beyond this value'
@@ -85,78 +74,31 @@ conditions:
   - condition: state
     entity_id: !input ichargerstatus
     state: charging
-  - condition: or
-    conditions:
-      - condition: numeric_state
-        entity_id: !input iphase1
-        above: !input idecreaseabove
-      - condition: and
-        conditions:
-          - condition: numeric_state
-            entity_id: !input iphase1
-            below: !input iallowincrease
-          - condition: numeric_state
-            entity_id: !input ichargercircuitlimit
-            attribute: state_dynamicCircuitCurrentP1
-            below: !input iallowincrease
-      - condition: numeric_state
-        entity_id: !input iphase2
-        above: !input idecreaseabove
-      - condition: and
-        conditions:
-          - condition: numeric_state
-            entity_id: !input iphase2
-            below: !input iallowincrease
-          - condition: numeric_state
-            entity_id: !input ichargercircuitlimit
-            attribute: state_dynamicCircuitCurrentP2
-            below: !input iallowincrease
-      - condition: numeric_state
-        entity_id: !input iphase3
-        above: !input idecreaseabove
-      - condition: and
-        conditions:
-          - condition: numeric_state
-            entity_id: !input iphase3
-            below: !input iallowincrease
-          - condition: numeric_state
-            entity_id: !input ichargercircuitlimit
-            attribute: state_dynamicCircuitCurrentP3
-            below: !input iallowincrease
 action:
   - service: easee.set_circuit_dynamic_limit
     data:
       charger_id: "{{ state_attr(entChargerStatus,'id') }}"
       current_p1: >-
         {% set C1 = states(entPhase1) | int() %}
+        {% set C1_diff = valDecreaseAbove - C1 %}
         {% set L1 = state_attr(entChargerLimit, "state_dynamicCircuitCurrentP1") %}
-        {% if C1 >= valDecreaseAbove %}
-          {{ L1 - 1 }}
-        {% elif C1 < valAllowIncrease and L1 < valMaxAllowed %}
-          {{ L1 + 1 }}
-        {% else %}
-          {{ L1 }}
-        {% endif %}
+        {% set L1_new = L1 + C1_diff %}
+        {% set L1_new_cap = [[L1_new, valMaxAllowed] | min, 0] | max %}
+        {{ L1_new_cap}}
       current_p2: >-
-        {% set C2 = states(entPhase1) | int() %}
+        {% set C2 = states(entPhase2) | int() %}
+        {% set C2_diff = valDecreaseAbove - C2 %}
         {% set L2 = state_attr(entChargerLimit, "state_dynamicCircuitCurrentP2") %}
-        {% if C2 >= valDecreaseAbove %}
-          {{ L2 - 1 }}
-        {% elif C2 < valAllowIncrease and L2 < valMaxAllowed %}
-          {{ L2 + 1 }}
-        {% else %}
-          {{ L2 }}
-        {% endif %}
+        {% set L2_new = L2 + C2_diff %}
+        {% set L2_new_cap = [[L2_new, valMaxAllowed] | min, 0] | max %}
+        {{ L2_new_cap}}
       current_p3: >-
-        {% set C3 = states(entPhase1) | int() %}
+        {% set C3 = states(entPhase3) | int() %}
+        {% set C3_diff = valDecreaseAbove - C3 %}
         {% set L3 = state_attr(entChargerLimit, "state_dynamicCircuitCurrentP3") %}
-        {% if C3 >= valDecreaseAbove %}
-          {{ L3 - 1 }}
-        {% elif C3 < valAllowIncrease and L3 < valMaxAllowed %}
-          {{ L3 + 1 }}
-        {% else %}
-          {{ L3 }}
-        {% endif %}
+        {% set L3_new = L3 + C3_diff %}
+        {% set L3_new_cap = [[L3_new, valMaxAllowed] | min, 0] | max %}
+        {{ L3_new_cap}}
       time_to_live: 10
 variables:
   entChargerStatus: !input ichargerstatus
@@ -165,7 +107,6 @@ variables:
   entPhase2: !input iphase2
   entPhase3: !input iphase3
   valDecreaseAbove: !input idecreaseabove
-  valAllowIncrease: !input iallowincrease
   valMaxAllowed: !input imaxallowed
 mode: single
 max_exceeded: silent
