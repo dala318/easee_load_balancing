@@ -105,6 +105,11 @@ action:
         {% set L3_new_cap = [[L3_new, valMaxAllowed] | min, 0] | max %}
         {{ L3_new_cap}}
       time_to_live: 10
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 1
+      milliseconds: 0
 variables:
   entChargerStatus: !input ichargerstatus
   entChargerLimit: !input ichargercircuitlimit
